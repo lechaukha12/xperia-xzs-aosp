@@ -4,8 +4,10 @@
 
 Pure **Android 17 AOSP ("Cinnamon Bun", `CP3A.260905.010`, SDK 37 / API 37.1)** port, kernel integration, and reproducible image build pipeline for the **Sony Xperia XZs (`SO-03J` / `keyaki`, Qualcomm Snapdragon 820 `MSM8996`, Sony `tone` platform)**.
 
+**Verified update — 2026-11-13:** kernel `5.4.302-g32a306e084db-dirty` build 7, two working cameras, Bluetooth preserved and Developer options crash fixed. See [the bilingual camera/Settings release notes](docs/SETTINGS_CAMERA_BRINGUP.md) for evidence, current image checksums and upgrade instructions. The final boot/OEM flash passed read-back and reboot verification. The original boot timing below belongs to the initial milestone.
+
 > [!IMPORTANT]
-> **Current Baseline Milestone (`v0.1.0-android17-boot-freeze`)**: Standalone cold boot from internal eMMC to Android 17 Launcher3 Home Screen in ~38 seconds (`sys.boot_completed=1`, `0` native/framework crashes), with hardware-accelerated Adreno 530 GPU composition (`1080x1920 @ 60 Hz`), multitouch, Wi-Fi, stereo speaker audio, sensors, internal storage, and USB ADB verified on live hardware.
+> **Initial Boot Milestone (`v0.1.0-android17-boot-freeze`)**: Standalone cold boot from internal eMMC to Android 17 Launcher3 Home Screen in ~38 seconds (`sys.boot_completed=1`, `0` native/framework crashes), with hardware-accelerated Adreno 530 GPU composition (`1080x1920 @ 60 Hz`), multitouch, Wi-Fi, stereo speaker audio, sensors, internal storage, and USB ADB verified on live hardware.
 
 ---
 
@@ -23,8 +25,8 @@ Pure **Android 17 AOSP ("Cinnamon Bun", `CP3A.260905.010`, SDK 37 / API 37.1)** 
 | :--- | :--- | :--- | :--- |
 | **System (`/` / `/system`)** | Google Android 17 AOSP ARM64 GSI (`CP3A.260905.010`, SDK `37`, Security Patch `2026-09-05`, Vanilla / No GMS) | `system` (`mmcblk0p55`, `7.18 GiB`) | Resized `2.6 GiB` ext4, unshared blocks, custom signed `com.android.vndk.v30.apex`, ext4-repacked `com.android.virt.apex`, generated SELinux `30.0.cil`, Linux 5.4 BPF + `libui` Gralloc 2.0 shims |
 | **Vendor (`/vendor`)** | LineageOS 18.1 Treble Vendor (`tone` / `keyaki`, VNDK `30`, VINTF level `5`) | `oem` (`mmcblk0p53`, `400 MiB`) | Mounted directly at `/vendor` in first-stage init; ships 17 Linux `5.4.302` audio DLKM modules, `brcmfmac` PCIe Wi-Fi firmware/NVRAM, ConfigFS USB gadget, and `fsverity`-enabled `fstab.keyaki` |
-| **Kernel & Boot** | Linux `5.4.302-xzs54` (`nec093/sov35-kernel`) + static C `keyaki_first_stage_init` | `boot` (`mmcblk0p30`, `64 MiB`) | Appended `msm8996-tone-keyaki` DTB, `S1_Boot`-compatible v0 header (`--os_version 10.0.0`), early eMMC/RPMB node population, `SwitchRoot` into `/system/bin/init` |
-| **Standalone Recovery** | TWRP `3.18.71` | `FOTAKernel` (`mmcblk0p48`, `64 MiB`) | Preserved untouched as an independent recovery environment (`adb reboot recovery` or `Power + Volume Down`) |
+| **Kernel & Boot** | Linux `5.4.302-g32a306e084db-dirty (#7)` (`nec093/sov35-kernel`) + static C `keyaki_first_stage_init` | `boot` (`mmcblk0p30`, `64 MiB`) | Appended `msm8996-tone-keyaki` DTB, `S1_Boot`-compatible v0 header (`--os_version 10.0.0`), early eMMC/RPMB node population, `SwitchRoot` into `/system/bin/init` |
+| **Standalone Recovery** | TWRP `3.7.0_9-0` (Linux `3.18.71`) | `FOTAKernel` (`mmcblk0p48`, `64 MiB`) | Preserved untouched as an independent recovery environment (`adb reboot recovery` or `Power + Volume Down`) |
 
 ---
 
@@ -34,6 +36,9 @@ Pure **Android 17 AOSP ("Cinnamon Bun", `CP3A.260905.010`, SDK 37 / API 37.1)** 
 
 | Subsystem | Status | Technical Details |
 | :--- | :--- | :--- |
+| **Bluetooth** | `[Working]` | Owner confirmed operation; HAL and Android stack remain ON, zero crashes during the observed checks. BCM4359 UART LPM workaround is included in the vendor builder. |
+| **Front & Rear Cameras** | `[Working]` | IMX400 rear / IMX258 front, IDs 0 and 1. Preview observed without tracing; owner confirmed both cameras working. Legacy media group mapping and keyaki XMLs are included. |
+| **Developer Options** | `[Working]` | Settings entry-page crash fixed with narrow `logpersistd_logging_prop` permissions on the debuggable user GSI. |
 | **Boot & Core OS** | `[Working]` | Standalone cold boot from `mmcblk0` in ~38s (`sys.boot_completed=1`), 45/45 APEX modules activated & verified by `PackageManagerService`, Zygote64, ART, SystemUI, Launcher3 |
 | **Display & Backlight** | `[Working]` | `1080x1920 @ 60 Hz` MIPI-DSI IPS panel (`mdss_dsi_panel`), hardware VSYNC interrupts, WLED / `lcd-backlight` brightness control |
 | **GPU & Composition** | `[Working]` | Qualcomm Adreno 530 (`OpenGL ES 3.2 V@415.0`), `Gralloc 2.0` (`allocator@2.0` / `mapper@2.0`), `HWComposer 2.1` hardware overlay (`DEVICE`) composition, `skiaglthreaded` RenderEngine |
@@ -50,18 +55,18 @@ Pure **Android 17 AOSP ("Cinnamon Bun", `CP3A.260905.010`, SDK 37 / API 37.1)** 
 
 | Subsystem | Status | Current State |
 | :--- | :--- | :--- |
+| **Torch / Advanced Camera Modes** | `[Untested]` | Flashlight, video recording and high-speed modes have not been included in this verification. |
+| **External Display / Desktop Mode** | `[Untested]` | Physical external-display output and desktop-mode operation have not been verified. |
 | **GPS / GNSS** | `[Partial / Untested]` | `android.hardware.gnss@2.0-service-qti` daemon is running and `gps` provider is registered in `LocationManagerService`; outdoor satellite lock has not yet been field-tested |
 | **NFC / FeliCa** | `[Partial / Untested]` | `android.hardware.nfc@1.1-service` and `com.android.nfc` start cleanly (`I2C`); physical tag reading (`SO-03J` NFC/FeliCa front-end) is not yet tested |
 | **Fingerprint Sensor** | `[Partial / Untested]` | `android.hardware.biometrics.fingerprint@2.1-service.sony` and `irq/159-soc:fpc` are active; fingerprint enrollment under Android 17 `BiometricService` is not yet verified |
 | **MicroSD Slot & USB OTG** | `[Partial / Untested]` | `vold` entries are configured in `fstab.keyaki` (`74a4900.sdhci` and `6a00000.dwc3`); physical media mount has not yet been tested |
-| **Notification RGB LED** | `[Partial / Untested]` | Kernel LED sysfs nodes (`/sys/class/leds/led:rgb_{red,green,blue}`) work; Android 17 `lights` HAL notification mapping is untested |
+| **Notification RGB LED** | `[Partial / Untested]` | Kernel LED sysfs nodes (`/sys/class/leds/{red,green,blue}`) work; Android 17 `lights` HAL notification mapping is untested |
 
 ### Not Working / Known Issues (Planned for Phase 2)
 
 | Subsystem | Status | Root Cause & Planned Resolution |
 | :--- | :--- | :--- |
-| **Bluetooth** | `[Not Working]` | `android.hardware.bluetooth@1.0-service` loads `BCM4359C0.hcd` and brings the controller `ON`, but Android 17's `com.android.bluetooth` (`BluetoothSystemServer` / GD stack) aborts ~6s after initialization due to missing legacy HCI/vendor capabilities. Keep Bluetooth disabled (`svc bluetooth disable`) until HAL shim is added |
-| **Camera & Flashlight/Torch** | `[Not Working]` | `cameraserver` currently sees `0` cameras; legacy MSM8996 `camera.provider@2.4` + Sony camera blobs require bring-up and shim work on Linux 5.4 + Android 17 |
 | **Cellular / RIL / SIM / Modem** | `[Not Working]` | Intentionally disabled (`modem.mdt` bind-mounted to `/dev/null` in `configs/init/init.keyaki.rc`) because the test unit runs legacy Nougat (`LA2.0_N_117`) baseband firmware whose IPA/QMI state triggers modem SSR crashes on Linux 5.4. Requires upgrading baseband partitions to Oreo (`41.3.A.2.192`) and adapting Radio HAL |
 | **SELinux Enforcing Mode** | `[Not Working]` | Kernel currently runs permissive via first-stage `/dev/.selinux_enforce_shadow` bind-mount so legacy MSM8996 vendor daemons can complete bring-up; full AVC audit and vendor sepolicy rules for enforcing mode are planned |
 | **Hardware Video Offload & Vulkan UI** | `[Not Working]` | UI uses OpenGL ES 3.2 (`ro.hwui.use_vulkan=false`, `skiaglthreaded`); video playback uses `com.android.media.swcodec` software codecs because legacy OMX is deprecated in Android 17 and Qualcomm MSM8996 `Codec2` hardware store is not yet wired up |
@@ -114,6 +119,7 @@ xperia-xzs-aosp/
 
 ### 1. Local Workspace Inputs (Excluded from Git via `.gitignore`)
 Before building, place the following upstream/device inputs into your local workspace (exact commits and SHA-256 digests are recorded in [`manifests/sources.json`](manifests/sources.json)):
+- `kernel/sov35-kernel/`: kernel Git checkout at the commit recorded in `manifests/sources.json`; required by the camera kernel builder.
 - `port_rom/extracted/system.img`: Extracted from Google Android 17 ARM64 GSI (`aosp17_arm64_CP3A.zip`).
 - `backup/oem.img`: Base LineageOS 18.1 `tone`/`keyaki` Treble vendor ext4 image (`400 MiB`).
 - `base_rom/`: Cloned `nec093/sov35-vendor` (`device-keyaki`, `device-tone-common`), `brcmfmac4359-pcie.{bin,txt}`, and extracted LineageOS 18.1 `vndk30_and_vintf.tar`.
@@ -124,13 +130,14 @@ An `aarch64` Linux container is used so `mount -o loop`, `e2fsprogs`, `erofs-uti
 
 ```bash
 docker run -d --privileged --name xzs17-box -v "$(pwd):/work" ubuntu:22.04 sleep infinity
-docker exec xzs17-box bash -c "apt-get update && apt-get install -y python3 e2fsprogs android-sdk-libsparse-utils erofs-utils apksigner openssl gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu attr unzip bc bison flex libssl-dev make git rsync"
+docker exec xzs17-box bash -c "apt-get update && apt-get install -y python3 e2fsprogs android-sdk-libsparse-utils erofs-utils apksigner openssl gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu attr unzip bc bison flex libssl-dev make git rsync dwarves libelf-dev"
 
 # 1. Build /vendor image (out/oem-a17-keyaki.img & out/oem-a17-keyaki.sparse.img)
+docker exec xzs17-box bash /work/tools/build_kernel_a17.sh
 docker exec xzs17-box bash /work/tools/build_vendor_oem.sh
 
 # 2. Build & offline-verify /system and boot images (out/system-a17-keyaki.sparse.img & out/boot-a17-keyaki.img)
-docker exec xzs17-box python3 /work/tools/build_system_and_boot_a17.py
+docker exec -e XZS17_KERNEL_IMAGE=/work/out/kernel_a17/Image.gz-dtb xzs17-box python3 /work/tools/build_system_and_boot_a17.py
 ```
 
 ---
@@ -158,7 +165,8 @@ docker exec xzs17-box python3 /work/tools/build_system_and_boot_a17.py
 
 ## Documentation Index
 
-- **Technical Porting Guide (10 Root Causes & Solutions)**: [English](docs/ANDROID17_PORT_GUIDE.md) | [Tiếng Việt](docs/ANDROID17_PORT_GUIDE.vi.md)
+- **Camera / Settings Release Notes (2026-11-13, EN/VI)**: [`docs/SETTINGS_CAMERA_BRINGUP.md`](docs/SETTINGS_CAMERA_BRINGUP.md)
+- **Technical Porting Guide (Root Causes & Solutions)**: [English](docs/ANDROID17_PORT_GUIDE.md) | [Tiếng Việt](docs/ANDROID17_PORT_GUIDE.vi.md)
 - **Hardware Partition Map & Safety Policy**: [`docs/PARTITION_LAYOUT.md`](docs/PARTITION_LAYOUT.md)
 - **Sony `S1_Boot` Reboot & Recovery Operations**: [`docs/REBOOT_AND_RECOVERY.md`](docs/REBOOT_AND_RECOVERY.md)
 - **Project & Contributor Rules**: [`AGENTS.md`](AGENTS.md)

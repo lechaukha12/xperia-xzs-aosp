@@ -29,6 +29,7 @@ from patch_bpf_54 import patch_from_tethering_capex
 from patch_libui_gralloc2 import patch_elf32, patch_elf64
 from patch_tethering_54 import patch_libservice_connectivity
 from repack_virt_apex_ext4 import ensure_container_keys, repack_virt_apex
+from patch_settings_logpersist_policy import patch as patch_settings_logpersist_policy
 
 
 def run(cmd: str) -> None:
@@ -78,7 +79,8 @@ COMPONENTS = ROOT / "out" / "components"
 VNDK30_APEX = COMPONENTS / "com.android.vndk.v30.signed.apex"
 VIRT_SIGNED_APEX = COMPONENTS / "com.android.virt.signed.apex"
 VNDK30_TAR = ROOT / "base_rom" / "los18_system_extract" / "vndk30_and_vintf.tar"
-KERNEL_IMG = ROOT / "prebuilt" / "Image.gz-dtb"
+KERNEL_IMG = Path(os.environ.get(
+    "XZS17_KERNEL_IMAGE", str(ROOT / "prebuilt" / "Image.gz-dtb")))
 FIRST_STAGE_SRC = ROOT / "tools" / "keyaki_first_stage_init.c"
 MKBOOTIMG = ROOT / "tools" / "mkbootimg" / "mkbootimg.py"
 AVBTOOL = ROOT / "tools" / "avb" / "avbtool.py"
@@ -299,6 +301,9 @@ try:
         os.chown(sp, 0, 0)
         os.chmod(sp, 0o644)
         set_selinux(sp, sepolicy_ctx)
+
+    # ro.debuggable=1 exposes Settings' logpersist controller on this user GSI.
+    patch_settings_logpersist_policy(Path(f"{MNT}/system/etc/selinux/plat_sepolicy.cil"))
 
     # Offline verification with Android 17's own /system/bin/secilc at kernel policyvers 31
     se_tmp = "/tmp/secilc_verify_dir"

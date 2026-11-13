@@ -2,6 +2,8 @@
 
 **Ngôn ngữ / Language**: [English (Default - ANDROID17_PORT_GUIDE.md)](ANDROID17_PORT_GUIDE.md) | **Tiếng Việt**
 
+**Cập nhật 13/11/2026:** kernel số 7, hai camera và Bluetooth hoạt động, Developer options hết crash. Xem [ghi chú phát hành](SETTINGS_CAMERA_BRINGUP.md) cho kết quả kiểm chứng và manifest image.
+
 ## 1. Tổng Quan Dự Án & Kiến Trúc Hệ Thống
 
 Tài liệu này mô tả chi tiết toàn bộ quy trình kỹ thuật, các rào cản kiến trúc qua **7 thế hệ Android** (từ Android 8.0 / Android 11 Project Treble VNDK 30 lên **Android 17 "Cinnamon Bun" — `CP3A.260905.010`, SDK 37 / API 37.1**), và giải pháp khắc phục triệt để đã được kiểm chứng thực tế trên thiết bị **Sony Xperia XZs (`SO-03J` / `keyaki`, Qualcomm Snapdragon 820 `MSM8996`, nền tảng Sony `tone`)**.
@@ -11,16 +13,16 @@ Tài liệu này mô tả chi tiết toàn bộ quy trình kỹ thuật, các r�
 | :--- | :--- | :--- | :--- |
 | **System (OS)** | Google Android 17 AOSP ARM64 GSI (`CP3A.260905.010`, SDK `37`) | `system` (`mmcblk0p55`, `7.18 GiB`) | Mở rộng ext4 `2.6 GiB`, unshare blocks, tích hợp VNDK v30 + ext4 `virt` APEX + SELinux `30.0.cil` |
 | **Vendor (HAL)** | LineageOS 18.1 Treble Vendor (`tone` / `keyaki`, VNDK `30`) | `oem` (`mmcblk0p53`, `400 MiB`) | Mount trực tiếp vào `/vendor` từ giai đoạn First-Stage Init |
-| **Kernel** | Linux `5.4.302-xzs54` (`nec093/sov35-kernel`) | `boot` (`mmcblk0p30`, `64 MiB`) | Hỗ trợ eBPF, cgroup v2, 17 module âm thanh DLKM `msm8996-tasha`, Wi-Fi PCIe `brcmfmac` |
+| **Kernel** | Linux `5.4.302-g32a306e084db-dirty (#7)` (`nec093/sov35-kernel`) | `boot` (`mmcblk0p30`, `64 MiB`) | Hỗ trợ eBPF, cgroup v2, 17 module âm thanh DLKM `msm8996-tasha`, Wi-Fi PCIe `brcmfmac` |
 | **First-Stage Init** | Custom static C (`tools/keyaki_first_stage_init.c`) | `boot` ramdisk (`/init`) | Khởi tạo node eMMC + RPMB, mount `/system` & `/vendor`, `SwitchRoot`, giữ shadow SELinux |
-| **Recovery dự phòng** | TWRP `3.18.71` (`FOTAKernel`) | `FOTAKernel` (`mmcblk0p48`, `64 MiB`) | Giữ nguyên bản gốc không chạm tới (`adb reboot recovery` hoặc `Nguồn + Giảm âm lượng`) |
+| **Recovery dự phòng** | TWRP `3.7.0_9-0` (Linux `3.18.71`) (`FOTAKernel`) | `FOTAKernel` (`mmcblk0p48`, `64 MiB`) | Giữ nguyên bản gốc không chạm tới (`adb reboot recovery` hoặc `Nguồn + Giảm âm lượng`) |
 
 > [!CAUTION]
 > Tuyệt đối không bao giờ ghi đè các phân vùng nhạy cảm của Sony gồm `TA` (`mmcblk0p1` — DRM keys và hiệu chuẩn), `aboot` (`mmcblk0p13` — `S1_Boot`), `FOTAKernel` (`mmcblk0p48`), `modemst1`, `modemst2`, `persist`, và `fsg`.
 
 ---
 
-## 2. Chi Tiết 10 Rào Cản Kỹ Thuật Cốt Lõi & Giải Pháp Triệt Để
+## 2. Chi Tiết Các Rào Cản Kỹ Thuật Cốt Lõi & Giải Pháp Triệt Để
 
 ### 2.1. Tương thích Bootloader Sony `S1_Boot` (Màn hình đen + Đèn LED xanh lá)
 - **Nguyên nhân**: Bootloader `S1_Boot` của dòng Xperia XZs (`MSM8996`) kiểm tra nghiêm ngặt cấu trúc `Image.gz-dtb` appended DTB của Sony `keyaki` và trường `os_version` trong Android Boot Image Header v0. Nếu đặt `--os_version 17.0.0`, `S1_Boot` từ chối giải nén và treo sớm với đèn LED xanh lá.
@@ -88,6 +90,31 @@ Tài liệu này mô tả chi tiết toàn bộ quy trình kỹ thuật, các r�
 - **Modem Guard**: Trên nền firmware baseband Nougat cũ (`LA2.0_N_117`), bind-mount `/dev/null` lên `modem.mdt` trong `configs/init/init.keyaki.rc` để ngăn lỗi IPA/SSR cho đến khi nâng cấp baseband lên Oreo.
 
 ---
+
+### 2.11. Developer options trên GSI user bật debug
+
+Settings crash khi ghi `logd.logpersistd=clear`: port bật `ro.debuggable=1`,
+hiển thị controller nhưng policy user thiếu quyền. Script policy chỉ cấp quyền
+cần thiết cho `system_app` với `logpersistd_logging_prop`, giữ metadata file.
+Secilc offline biên dịch thành công và đã xác nhận đúng trang Developer options.
+
+### 2.12. ABI Media camera và cấu hình cảm biến keyaki
+
+HAL cũ tìm type `0x20000` cùng group số; kernel 5.4 dùng function `0x10fxx`.
+Bản vá chuyển kết quả ENUM_ENTITIES cho subdevice `msm_config` và video node
+`msm_camera` (group 2), đảo lại group CSID/buffer-manager. Probe 32/64-bit khớp
+nhau. XML phải dùng IMX400/IMX258 của keyaki, khớp ID chip thật, thay cấu hình
+IMX300/IMX214 của donor. Sau đó hai cảm biến dò thành công, CameraService có ID
+0 và 1. Đã gỡ strace trước khi kiểm chứng preview; chủ máy xác nhận cả hai camera
+hoạt động.
+
+### 2.13. Giữ Bluetooth và đóng gói bản cập nhật
+
+Giữ nguyên bản vá UART LPM BCM4359 trong builder vendor. Chủ máy xác nhận
+Bluetooth hoạt động; đã quan sát ON và crash bằng 0. Vendor chạy chính trả mức
+debug camera về 0, không chứa binary probe. Khi tái tạo boot phải chọn rõ kernel
+đã có bản vá camera. Xem [ghi chú phát hành](SETTINGS_CAMERA_BRINGUP.md) để biết
+checksum, phạm vi kiểm chứng, lệnh tái tạo và helper ghi boot/OEM có đọc lại.
 
 ## 3. Kết Quả Kiểm Chứng Thực Tế Trên Thiết Bị (`SO-03J`)
 

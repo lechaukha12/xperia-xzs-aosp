@@ -8,7 +8,8 @@
 
 ### 1. Project Status and Scope
 - **Current Milestone (Frozen Baseline)**: Pure **Android 17 AOSP (`CP3A.260905.010`, SDK 37)** boots standalone from internal eMMC on **Sony Xperia XZs (`SO-03J` / `keyaki`, Qualcomm Snapdragon 820 `MSM8996`)** to Launcher3 with GPU hardware acceleration, touchscreen, Wi-Fi, stereo audio, sensors, internal storage, and ADB working.
-- **Next Phase**: Incremental subsystem bring-up (Bluetooth stability, Camera HAL, Oreo baseband + RIL/cellular, Codec2 hardware video, and SELinux enforcing rules) without breaking the verified boot baseline.
+- **Verified update (2026-11-13)**: Kernel build 7 (`5.4.302-g32a306e084db-dirty`) boots with two detected cameras (IMX400 rear / IMX258 front); rear preview was observed and the owner confirmed both cameras working. Bluetooth remains working; Developer options entry-page crash is fixed. Production vendor has no strace/probe wrapper. See `docs/SETTINGS_CAMERA_BRINGUP.md` and `manifests/camera-settings-release-20261113.json`.
+- **Next Phase**: Unverified subsystems and advanced camera/Bluetooth profiles, RIL/cellular, Codec2 hardware video, and SELinux enforcing rules. Preserve this verified camera/Settings baseline. Select `XZS17_KERNEL_IMAGE=/work/out/kernel_a17/Image.gz-dtb` when rebuilding boot; the original prebuilt is the historical baseline.
 
 ### 2. Device and Partition Safety Rules (Mandatory)
 1. **Never overwrite irreproducible or critical device partitions**:
@@ -36,7 +37,8 @@
 
 ### 1. Trạng Thái Dự Án và Phạm Vi
 - **Cột mốc hiện tại (Baseline đã đóng băng)**: **Android 17 AOSP thuần (`CP3A.260905.010`, SDK 37)** đã cold boot độc lập từ eMMC trên **Sony Xperia XZs (`SO-03J` / `keyaki`, Qualcomm Snapdragon 820 `MSM8996`)** vào màn hình chính Launcher3 với GPU tăng tốc phần cứng, cảm ứng, Wi-Fi, loa kép stereo, cảm biến, bộ nhớ trong và ADB hoạt động ổn định.
-- **Giai đoạn tiếp theo**: Hoàn thiện từng phân hệ phần cứng còn thiếu (Bluetooth, Camera HAL, baseband Oreo + RIL/mạng di động, giải mã video phần cứng Codec2, và SELinux enforcing) mà không làm hỏng nền tảng boot đã đóng băng.
+- **Cập nhật đã kiểm chứng (13/11/2026)**: Kernel số 7 (`5.4.302-g32a306e084db-dirty`) boot được, nhận IMX400 sau / IMX258 trước. Đã quan sát preview sau và chủ máy xác nhận cả hai camera hoạt động. Bluetooth giữ nguyên hoạt động; đã sửa crash lúc mở Developer options. Vendor chạy chính đã gỡ strace/probe. Xem ghi chú và manifest camera/Settings.
+- **Giai đoạn tiếp theo**: Các phân hệ chưa kiểm chứng, chế độ camera/Bluetooth nâng cao, RIL, Codec2 và SELinux enforcing. Giữ baseline camera/Settings này. Khi tái tạo boot, chọn `XZS17_KERNEL_IMAGE=/work/out/kernel_a17/Image.gz-dtb`; prebuilt ban đầu là baseline lịch sử.
 
 ### 2. Quy Tắc An Toàn Phân Vùng và Phần Cứng (Bắt Buộc)
 1. **Tuyệt đối không ghi đè các phân vùng nhạy cảm hoặc không thể tái tạo**:

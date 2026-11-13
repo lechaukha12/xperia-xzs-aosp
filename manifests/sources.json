@@ -35,7 +35,9 @@
       "defconfig": "configs/kernel/aosp_tone_keyaki_defconfig",
       "config_fragment": "configs/kernel/android17_54.fragment",
       "prebuilt_verified_kernel_sha256": "b4e08686bb2c8123514780e3c8de544cbe34170b404491d24be4b78a974b60e8",
-      "audio_dlkm_count": 17
+      "audio_dlkm_count": 17,
+      "current_release_kernel_sha256": "e99aec3467aec20d8fa7a23e357b71d0049c15337492949fa355b58c68391925",
+      "current_release_build": 7
     },
     "vendor_and_device_configs": {
       "vendor_base": "LineageOS 18.1 Treble Vendor (VNDK 30, target-level 5)",
@@ -56,5 +58,6 @@
         "license": "Apache-2.0"
       }
     }
-  }
+  },
+  "latest_release_manifest": "camera-settings-release-20261113.json"
 }

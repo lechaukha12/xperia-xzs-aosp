@@ -2,6 +2,8 @@
 
 **Language**: **English (Default)** | [Tiếng Việt (ANDROID17_PORT_GUIDE.vi.md)](ANDROID17_PORT_GUIDE.vi.md)
 
+**2026-11-13 update:** build-7 kernel, both cameras and Bluetooth working; Developer options crash fixed. Current verification and artifact manifest: [release notes](SETTINGS_CAMERA_BRINGUP.md).
+
 ## 1. Overview and Architectural Scope
 
 This document details the end-to-end engineering analysis, architectural barriers spanning **seven Android generations** (from legacy non-A/B Android 8.0 / Android 11 Project Treble VNDK 30 up to **Android 17 "Cinnamon Bun" — `CP3A.260905.010`, SDK 37 / API 37.1**), and the deterministic solutions verified on live **Sony Xperia XZs (`SO-03J` / `keyaki`, Qualcomm Snapdragon 820 `MSM8996`, Sony `tone` platform)** hardware.
@@ -11,16 +13,16 @@ This document details the end-to-end engineering analysis, architectural barrier
 | :--- | :--- | :--- | :--- |
 | **System (OS)** | Google Android 17 AOSP ARM64 GSI (`CP3A.260905.010`, SDK `37`) | `system` (`mmcblk0p55`, `7.18 GiB`) | Expanded `2.6 GiB` ext4, unshared blocks, custom signed `vndk.v30` + ext4 `virt` APEXes, generated SELinux `30.0.cil` |
 | **Vendor (HAL)** | LineageOS 18.1 Treble Vendor (`tone` / `keyaki`, VNDK `30`) | `oem` (`mmcblk0p53`, `400 MiB`) | Mounted directly at `/vendor` during First-Stage Init |
-| **Kernel** | Linux `5.4.302-xzs54` (`nec093/sov35-kernel`) | `boot` (`mmcblk0p30`, `64 MiB`) | eBPF, cgroup v2, 17 `msm8996-tasha` audio DLKM modules, `brcmfmac` PCIe Wi-Fi |
+| **Kernel** | Linux `5.4.302-g32a306e084db-dirty (#7)` (`nec093/sov35-kernel`) | `boot` (`mmcblk0p30`, `64 MiB`) | eBPF, cgroup v2, 17 `msm8996-tasha` audio DLKM modules, `brcmfmac` PCIe Wi-Fi |
 | **First-Stage Init** | Custom static C (`tools/keyaki_first_stage_init.c`) | `boot` ramdisk (`/init`) | Creates eMMC + RPMB device nodes, mounts `/system` & `/vendor`, executes `SwitchRoot`, maintains permissive shadow |
-| **Fallback Recovery** | TWRP `3.18.71` (`FOTAKernel`) | `FOTAKernel` (`mmcblk0p48`, `64 MiB`) | Untouched standalone recovery (`adb reboot recovery` or `Power + Volume Down`) |
+| **Fallback Recovery** | TWRP `3.7.0_9-0` (Linux `3.18.71`) (`FOTAKernel`) | `FOTAKernel` (`mmcblk0p48`, `64 MiB`) | Untouched standalone recovery (`adb reboot recovery` or `Power + Volume Down`) |
 
 > [!CAUTION]
 > Never write to sensitive Sony or Qualcomm partitions: `TA` (`mmcblk0p1` — DRM keys and calibration), `aboot` (`mmcblk0p13` — `S1_Boot`), `FOTAKernel` (`mmcblk0p48`), `modemst1`, `modemst2`, `persist`, and `fsg`.
 
 ---
 
-## 2. Ten Core Bring-Up Root Causes and Deterministic Solutions
+## 2. Core Bring-Up Root Causes and Deterministic Solutions
 
 ### 2.1. Sony `S1_Boot` Boot Image Header Rejection (Black Screen + Solid Green LED)
 - **Root Cause**: Sony's `S1_Boot` bootloader on `MSM8996` strictly validates the appended `msm8996-tone-keyaki` DTB format in `Image.gz-dtb` and the `os_version` field in Android Boot Image Header v0. Setting `--os_version 17.0.0` causes `S1_Boot` to stall early with a solid green LED before kernel decompression.
@@ -88,6 +90,34 @@ This document details the end-to-end engineering analysis, architectural barrier
 - **Modem Guard**: Bind-mounted `/dev/null` over `/vendor/firmware_mnt/image/modem.mdt` in `configs/init/init.keyaki.rc` to prevent legacy Nougat (`LA2.0_N_117`) modem IPA/SSR crashes until baseband firmware is upgraded to Oreo.
 
 ---
+
+### 2.11. Developer Options on a Debuggable User GSI
+
+Settings crashed while setting `logd.logpersistd=clear`: the port enables
+`ro.debuggable=1`, exposing a controller omitted from user-policy permissions.
+`patch_settings_logpersist_policy.py` grants only the required
+`logpersistd_logging_prop` access to `system_app`, preserving file metadata.
+Offline secilc passed and the actual Developer options page was verified.
+
+### 2.12. Camera Media ABI and Correct Sensors
+
+The legacy HAL expects subdevice type `0x20000` plus numeric group IDs. The 5.4
+camera tree instead uses functions `0x10fxx`. The camera mapping patch restores
+legacy ENUM_ENTITIES output for `msm_config` subdevices and `msm_camera` video
+nodes (group 2), including the CSID/buffer-manager group swap. Native/compat
+probes agree. Vendor XMLs must use keyaki IMX400/IMX258, matching real chip IDs,
+instead of the donor IMX300/IMX214 configuration. Both sensors then probe and
+CameraService exposes IDs 0 and 1. Full strace was removed before functional
+preview verification; the owner confirmed both cameras work.
+
+### 2.13. Bluetooth Preservation and Release Artifacts
+
+The existing `build_vendor_oem.sh` UART LPM workaround for BCM4359 is retained.
+The owner confirmed Bluetooth working, with ON/zero-crash status observed.
+Production vendor resets temporary camera debug levels to 0 and omits all probe
+executables. Use the explicitly selected camera kernel when rebuilding boot.
+See [release notes](SETTINGS_CAMERA_BRINGUP.md) for checksums, verification scope,
+reproduction commands and the guarded boot/OEM recovery installer.
 
 ## 3. Live Verification Summary
 

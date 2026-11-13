@@ -1,0 +1,6 @@
+# Keep the production camera path free of diagnostic tracing and verbose logs.
+# These three properties were temporarily raised during camera bring-up.
+on post-fs-data
+    setprop persist.vendor.camera.global.debug 0
+    setprop persist.vendor.camera.hal.debug 0
+    setprop persist.vendor.camera.mci.debug 0

@@ -76,6 +76,24 @@ for p in targets:
         print("  Patched bcmdhd firmware_path -> /dev/null in:", p)
 PY
 
+echo "2c. Patching libbt-vendor.so (BCM4359C0 UART LPM Sleep_Mode=0 & UPIO_BT_WAKE no-op for 5.4 kernel without msm_bt_sleep)..."
+python3 - "$MNT/lib64/libbt-vendor.so" << 'PY'
+import os, sys
+p = sys.argv[1]
+ctx = os.getxattr(p, b"security.selinux", follow_symlinks=False)
+st = os.stat(p)
+b = bytearray(open(p, "rb").read())
+assert bytes(b[0x64d8:0x64e4]) == bytes([1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]), "Unexpected LPM param table at 0x64d8"
+assert bytes(b[0x5488:0x548c]) == bytes.fromhex("080000d0"), "Unexpected upio_set instruction at 0x5488"
+b[0x64d8:0x64e4] = bytes([0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+b[0x5488:0x548c] = bytes.fromhex("c0035fd6")
+open(p, "wb").write(b)
+os.chown(p, st.st_uid, st.st_gid)
+os.chmod(p, st.st_mode & 0o7777)
+os.setxattr(p, b"security.selinux", ctx, follow_symlinks=False)
+print("  Patched BCM4359C0 UART LPM in:", p)
+PY
+
 echo "3. Installing keyaki + 5.4 init, USB ConfigFS, ueventd, fstab, audio & input configs..."
 RC_CTX=$(get_ctx "$MNT/etc/init/hw/init.qcom.rc" "u:object_r:vendor_configs_file:s0")
 ETC_CTX=$(get_ctx "$MNT/etc/fstab.qcom" "u:object_r:vendor_configs_file:s0")
@@ -131,6 +149,13 @@ install_vfile /work/configs/fstab/fstab.keyaki "$MNT/etc/fstab.qcom" 0644 "$ETC_
 install_vfile /work/base_rom/device-keyaki/audio/audio_platform_info.xml "$MNT/etc/audio_platform_info.xml" 0644 "$ETC_CTX"
 install_vfile /work/base_rom/device-keyaki/audio/mixer_paths_tasha.xml "$MNT/etc/mixer_paths_tasha.xml" 0644 "$ETC_CTX"
 install_vfile /work/base_rom/device-keyaki/idc/clearpad.idc "$MNT/usr/idc/clearpad.idc" 0644 "u:object_r:vendor_file:s0"
+
+# The donor vendor contains kagura IMX300/IMX214 settings. SO-03J keyaki
+# reports IMX400/IMX258 IDs; install the matching device camera XMLs.
+for camera_xml in /work/base_rom/device-keyaki/rootdir/vendor/etc/camera/*.xml; do
+    install_vfile "$camera_xml" "$MNT/etc/camera/$(basename "$camera_xml")" 0644 "$ETC_CTX"
+done
+install_vfile /work/configs/init/init.keyaki.camera.rc "$MNT/etc/init/init.keyaki.camera.rc" 0644 "$RC_CTX"
 
 echo "3b. Removing broken services (thermanager GPU throttle bug, configstore@1.1, stale precompiled_sepolicy)..."
 rm -f "$MNT/etc/init/thermanager.rc" "$MNT/bin/thermanager"

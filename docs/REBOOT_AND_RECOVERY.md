@@ -13,10 +13,21 @@ Sony's `S1_Boot` (`1299-4832_S1_Boot_MSM8996`) on Xperia XZs enforces strict che
 - **Appended DTB**: Kernel must be an `Image.gz-dtb` containing the Sony `keyaki` (`msm8996-tone-keyaki`) device tree descriptor expected by `S1_Boot`.
 
 ### 2. Reboot Reason Codes (`warmboot`) on MSM8996 `S1_Boot`
-Inspection of `aboot` (`mmcblk0p13`) and live hardware behavior confirms the following PMIC PON / warmboot behavior:
-- **`adb reboot recovery`**: Sets recovery reason (`0x77665502`), causing `S1_Boot` to boot standalone TWRP from `FOTAKernel` (`mmcblk0p48`). Note that USB ADB enumeration in TWRP takes ~35 seconds after rebooting from Linux 5.4.
-- **`adb reboot bootloader`**: Notice that `S1_Boot` looks for Sony's proprietary magic `0x6f656d46` (`oemF` — `warmboot=0x6f656d46`), whereas upstream `sov35-kernel` writes standard Qualcomm `0x77665500` on `bootloader` reboot. Because of this mismatch, `adb reboot bootloader` from Linux 5.4 does **not** enter Fastboot; when USB power is attached, `S1_Boot` falls into offline charging mode (`androidboot.mode=charger`).
-- **Plain `adb reboot` while USB cable is plugged in**: On Sony `S1_Boot`, a warm reset with VBUS present can also enter offline charger mode unless booted cold or triggered via `fastboot reboot`.
+The current source is `drivers/power/reset/msm-poweroff.c`. Its reason values
+are conditional on Sony target definitions; do not treat `oemF` as a universal
+Fastboot code.
+
+- **Recovery**: the `TARGET_SOMC_S1BOOT` branch writes `0x6f656d46` (`oemF`);
+  the generic branch writes `0x77665502`. Recovery targets the standalone TWRP
+  in FOTAKernel. Some transitions returned ADB after roughly 35–60 seconds;
+  others did not enumerate USB and required a physical-key entry.
+- **Bootloader**: the generic `bootloader` branch writes `0x77665500`. A separate
+  `s1bootloader` branch writes `0x6f656d53`, but that route has not been validated
+  in this bring-up. Use the hardware Volume Up + USB method for Fastboot.
+- **System reboot from TWRP**: `adb reboot` successfully started the installed
+  Android kernel during camera verification. Reboot behavior from Linux 5.4
+  has been less reliable; allow for manual recovery entry rather than repeatedly
+  issuing commands to an absent USB device.
 
 ### 3. Reliable Hardware Key Combinations
 1. **Enter Fastboot Mode (Blue LED)**:
@@ -24,7 +35,7 @@ Inspection of `aboot` (`mmcblk0p13`) and live hardware behavior confirms the fol
    - Hold **Volume Up** and plug the USB cable into the host computer.
    - Wait for the notification LED to turn **solid blue** and verify with `fastboot devices`.
 2. **Enter TWRP Recovery (`FOTAKernel`)**:
-   - From booted Android 17: run `adb reboot recovery` and wait ~35–40 seconds for TWRP ADB.
+   - From Android 17, try `adb reboot recovery`. If TWRP USB does not return, use the physical-key sequence below.
    - From powered-off state (USB unplugged): hold **Power + Volume Down** until the Sony logo appears.
 3. **Force Hard Reset (if unresponsive)**:
    - Hold **Power + Volume Up**:
@@ -50,10 +61,18 @@ Bootloader `S1_Boot` (`1299-4832_S1_Boot_MSM8996`) trên Xperia XZs kiểm tra n
 - **DTB đính kèm**: Kernel phải ở định dạng `Image.gz-dtb` chứa device tree `keyaki` (`msm8996-tone-keyaki`) tương thích với `S1_Boot`.
 
 ### 2. Cơ Chế Mã Khởi Động Lại (`warmboot`) Trên `S1_Boot`
-Qua phân tích nhị phân `aboot` (`mmcblk0p13`) và kiểm chứng thực tế trên máy:
-- **`adb reboot recovery`**: Ghi mã recovery (`0x77665502`), `S1_Boot` nạp TWRP độc lập từ phân vùng `FOTAKernel` (`mmcblk0p48`). Lưu ý TWRP mất khoảng ~35 giây để nhận USB ADB khi chuyển từ kernel 5.4 sang.
-- **`adb reboot bootloader`**: `S1_Boot` của Sony yêu cầu mã riêng `0x6f656d46` (`oemF`), trong khi `sov35-kernel` ghi mã Qualcomm tiêu chuẩn `0x77665500`. Do đó `adb reboot bootloader` từ kernel 5.4 không vào thẳng Fastboot mà sẽ chuyển sang chế độ sạc tắt máy (`charger`) nếu đang cắm cáp USB.
-- **`adb reboot` thường khi đang cắm cáp USB**: Trên `S1_Boot`, khởi động lại nóng khi có nguồn USB VBUS có thể khiến bootloader vào chế độ sạc tắt máy. Khuyến nghị khởi động từ trạng thái tắt nguồn hoặc dùng `fastboot reboot`.
+Nguồn hiện tại là `drivers/power/reset/msm-poweroff.c`. Mã reason phụ thuộc
+nhánh biên dịch Sony; không coi `oemF` là mã Fastboot dùng chung.
+
+- **Recovery**: nhánh `TARGET_SOMC_S1BOOT` ghi `0x6f656d46` (`oemF`), nhánh
+  generic ghi `0x77665502`. Recovery nằm ở FOTAKernel. Một số lần nhận ADB sau
+  khoảng 35–60 giây; một số lần không xuất hiện trên USB, phải vào bằng phím cứng.
+- **Bootloader**: nhánh `bootloader` generic ghi `0x77665500`. Nguồn còn có nhánh
+  `s1bootloader` ghi `0x6f656d53`, nhưng chưa kiểm chứng đường này trong phiên
+  bring-up. Dùng Tăng âm lượng + cắm USB để vào Fastboot.
+- **Reboot hệ thống từ TWRP**: `adb reboot` đã boot được kernel Android đã nạp
+  trong các lần kiểm tra camera. Reboot từ Linux 5.4 chưa ổn định bằng; nếu USB
+  không nhận lại thì vào recovery bằng phím, không lặp lệnh với máy chưa kết nối.
 
 ### 3. Tổ Hợp Phím Cứng An Toàn Nhất
 1. **Vào chế độ Fastboot (Đèn LED xanh dương)**:
@@ -61,7 +80,7 @@ Qua phân tích nhị phân `aboot` (`mmcblk0p13`) và kiểm chứng thực t�
    - Nhấn giữ phím **Tăng âm lượng (Volume Up)** và cắm cáp USB vào máy tính.
    - Đèn LED chuyển sang màu **xanh dương**, kiểm tra bằng `fastboot devices`.
 2. **Vào TWRP Recovery (`FOTAKernel`)**:
-   - Khi đang ở trong Android 17: chạy `adb reboot recovery` và đợi ~35–40 giây.
+   - Khi đang ở Android 17, thử `adb reboot recovery`. Nếu TWRP không nhận USB thì dùng tổ hợp phím bên dưới.
    - Khi máy đang tắt nguồn (rút cáp USB): nhấn giữ **Nguồn + Giảm âm lượng (Volume Down)** đến khi hiện logo Sony.
 3. **Cưỡng bức tắt nguồn khi treo**:
    - Nhấn giữ **Nguồn + Tăng âm lượng**:

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "release": "camera-settings-2026-11-13",
+  "device": "SO-03J / keyaki",
+  "android_build": "CP3A.260905.010",
+  "sdk": 37,
+  "kernel_release": "5.4.302-g32a306e084db-dirty",
+  "kernel_build": 7,
+  "verified_features": {
+    "camera_count": 2,
+    "rear_sensor": "IMX400",
+    "front_sensor": "IMX258",
+    "owner_confirmed_both_cameras": true,
+    "rear_preview_frames_observed": 211,
+    "bluetooth": "owner confirmed; ON and zero crashes during checks",
+    "developer_options": "entry page opened without original property-write crash"
+  },
+  "artifacts": {
+    "boot-a17-keyaki.img": {
+      "sha256": "6d7cc1cbbd2cf19edce6241852b3551e55735e9c4778068aa784b5488a91cbd3",
+      "size_bytes": 12402688
+    },
+    "oem-a17-keyaki.img": {
+      "sha256": "1f0828a86b2d7f4933ab46debb1faa956ec1f7c2732763d13e2144757aeb9b63",
+      "size_bytes": 419430400
+    },
+    "oem-a17-keyaki.sparse.img": {
+      "sha256": "d0225afe1cb11878b2f9b10cbb0aad77b615e16d0b8389e9e182a92f01d14d26",
+      "size_bytes": 300345060
+    },
+    "system-a17-keyaki.sparse.img": {
+      "sha256": "0d5ed46f92477865d686c88d9807cc797934be4fc35b1e818ce6c85f6af88952",
+      "size_bytes": 2230846376
+    }
+  },
+  "system_policy_sha256": "92d5d8a3161f99d458e9f1e9df727ae5c9f5902d0cf748fe60d466265cf3aee3",
+  "deployment": {
+    "status": "boot and OEM flashed; image read-back and Android boot verification passed",
+    "system": "Existing Settings CIL hash verified in root TWRP after the boot/OEM flash; system image not reflashed",
+    "userdata": "preserved",
+    "FOTAKernel": "preserved",
+    "flash_recorded_at": "2026-11-13T12:33:16+07:00",
+    "partitions_written": [
+      "boot / mmcblk0p30",
+      "oem / mmcblk0p53"
+    ],
+    "readback_sha256": {
+      "boot": "6d7cc1cbbd2cf19edce6241852b3551e55735e9c4778068aa784b5488a91cbd3",
+      "oem": "1f0828a86b2d7f4933ab46debb1faa956ec1f7c2732763d13e2144757aeb9b63"
+    },
+    "verified_at": "2026-11-13T12:37:16+07:00",
+    "bytes_verified": {
+      "boot": 12402688,
+      "oem": 419430400
+    },
+    "post_flash_checks": {
+      "verified_at": "2026-11-13T12:37:16+07:00",
+      "boot_completed": 1,
+      "kernel_build": 7,
+      "camera_count": 2,
+      "postflash_preview_frames_produced": 37,
+      "postflash_imagereader_frames_produced": 42,
+      "preview_observation": "Camera was closed before repeated frame sampling; counters were read from its last open session",
+      "bluetooth_state": "ON",
+      "bluetooth_crashes_observed": 0,
+      "developer_options_page": "opened; DevelopmentSettingsDashboardFragment visible",
+      "crash_buffer_empty": true,
+      "camera_instrumentation_removed": true
+    }
+  },
+  "not_separately_verified": [
+    "torch",
+    "video recording",
+    "high-speed camera modes",
+    "external display / desktop mode",
+    "cellular / RIL"
+  ]
+}
