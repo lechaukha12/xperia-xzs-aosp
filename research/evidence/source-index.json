@@ -1,0 +1,66 @@
+{
+  "checked_date": "2026-11-12",
+  "source_code_fetches": [
+    {
+      "source_url": "https://raw.githubusercontent.com/sonyxperiadev/device-sony-keyaki/38d60836be9bb97e894dabe7f4f9d80803e264f2/BoardConfig.mk",
+      "checked_date": "2026-11-12",
+      "local_research_fetch_sha256": "c02b098653ba4daeff41f86224ed16525ee849055ede229c8003e58de67d423f",
+      "downloaded_bytes": 1496,
+      "status": "read_in_research",
+      "source_file_not_redistributed_in_handoff": true
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/sonyxperiadev/device-sony-tone/959d560da6de7252dad4affae93cb529e5475c68/PlatformConfig.mk",
+      "checked_date": "2026-11-12",
+      "local_research_fetch_sha256": "d33e3e930f87f5ab3fde1357864462ad6aa44173179d588d1083279a80b522a1",
+      "downloaded_bytes": 1542,
+      "status": "read_in_research",
+      "source_file_not_redistributed_in_handoff": true
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/sonyxperiadev/device-sony-tone/959d560da6de7252dad4affae93cb529e5475c68/rootdir/vendor/etc/fstab.tone",
+      "checked_date": "2026-11-12",
+      "local_research_fetch_sha256": "6fd04ce121421c7b132836adcb735a05beacd393b7c129694e56e0f01423fd87",
+      "downloaded_bytes": 2342,
+      "status": "read_in_research",
+      "source_file_not_redistributed_in_handoff": true
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/sjllls/device-sony-tone/ee798ed0d2d397d8996d2e455439b90808e11634/PlatformConfig.mk",
+      "checked_date": "2026-11-12",
+      "local_research_fetch_sha256": "7bf4bfb233b9ad10327b1c25334cbe6b4a6f25fc814375566a973c78e2274602",
+      "downloaded_bytes": 2399,
+      "status": "read_in_research",
+      "source_file_not_redistributed_in_handoff": true
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/sjllls/device-sony-tone/ee798ed0d2d397d8996d2e455439b90808e11634/rootdir/vendor/etc/fstab.tone",
+      "checked_date": "2026-11-12",
+      "local_research_fetch_sha256": "9c0ec3472b861d2ab64c6f8b33f5e9c20acac23e0acc42dccf5d15a92b5b3e18",
+      "downloaded_bytes": 2341,
+      "status": "read_in_research",
+      "source_file_not_redistributed_in_handoff": true
+    },
+    {
+      "source_url": "https://raw.githubusercontent.com/sjllls/device-sony-keyaki/2ede8454add6bac8abea30eb6b876de9835ec1bb/BoardConfig.mk",
+      "checked_date": "2026-11-12",
+      "local_research_fetch_sha256": "c02b098653ba4daeff41f86224ed16525ee849055ede229c8003e58de67d423f",
+      "downloaded_bytes": 1496,
+      "status": "read_in_research",
+      "source_file_not_redistributed_in_handoff": true
+    }
+  ],
+  "unread_sources": [
+    {
+      "url": "https://xdaforums.com/t/10-0-project-treble-for-xperia-xzs-2020-03-18.3976367/",
+      "status": "web_timeout_or_inaccessible; curl_HTTP_403",
+      "zip_downloaded": false
+    }
+  ],
+  "api_source_urls": {
+    "keyaki-branches.json": "https://api.github.com/repos/sonyxperiadev/device-sony-keyaki/branches?per_page=100",
+    "tone-branches.json": "https://api.github.com/repos/sonyxperiadev/device-sony-tone/branches?per_page=100",
+    "sjll-keyaki-branches.json": "https://api.github.com/repos/sjllls/device-sony-keyaki/branches?per_page=100",
+    "sjll-tone-branches.json": "https://api.github.com/repos/sjllls/device-sony-tone/branches?per_page=100"
+  }
+}

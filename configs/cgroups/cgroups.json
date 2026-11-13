@@ -1,0 +1,45 @@
+{
+  "Cgroups": [
+    {
+      "Controller": "blkio",
+      "Path": "/dev/blkio",
+      "Mode": "0775",
+      "UID": "system",
+      "GID": "system",
+      "Optional": true
+    },
+    {
+      "Controller": "cpu",
+      "Path": "/dev/cpuctl",
+      "Mode": "0755",
+      "UID": "system",
+      "GID": "system"
+    },
+    {
+      "Controller": "cpuset",
+      "Path": "/dev/cpuset",
+      "Mode": "0755",
+      "UID": "system",
+      "GID": "system"
+    }
+  ],
+  "Cgroups2": {
+    "Path": "/sys/fs/cgroup",
+    "Mode": "0775",
+    "UID": "system",
+    "GID": "system",
+    "Controllers": [
+      {
+        "Controller": "freezer",
+        "Path": ".",
+        "Optional": true
+      },
+      {
+        "Controller": "memory",
+        "Path": ".",
+        "NeedsActivation": true,
+        "Optional": true
+      }
+    ]
+  }
+}

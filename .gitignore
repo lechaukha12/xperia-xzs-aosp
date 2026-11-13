@@ -1,0 +1,49 @@
+# Private device backups, keys, and local calibration partitions (NEVER commit)
+backup/
+*.pk8
+*.pem
+!tools/**
+adbkey*
+TA.img*
+modemst*
+fsg*
+
+# Build outputs, ROM archives, and scratch directories
+out/
+port_rom/
+base_rom/
+prebuilt/
+work/*
+!work/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# Local upstream kernel clones and binary kernel images
+kernel/sov35-kernel/
+kernel/xzs-scripts/
+kernel/*.gz-dtb*
+kernel/*.dtb
+
+# Large binary images and packages
+*.img
+*.img.*
+*.sparse.img
+*.raw.img
+*.cpio
+*.cpio.gz
+*.sin
+*.ftf
+*.ta
+*.zip
+*.tar
+*.tar.gz
+*.xz
+*.apex
+*.capex
+*.idsig
+*.ko
+
+# OS and Python cache files
+.DS_Store
+__pycache__/
+*.py[cod]

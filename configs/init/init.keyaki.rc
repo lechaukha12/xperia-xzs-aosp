@@ -1,0 +1,22 @@
+import /vendor/etc/init/hw/init.qcom.rc
+
+on early-init
+    write /sys/devices/platform/soc/6a00000.ssusb/mode peripheral
+
+on init
+    write /sys/devices/platform/soc/6a00000.ssusb/mode peripheral
+
+on early-fs
+    chown root system /dev/mmcblk0rpmb
+    chmod 0660 /dev/mmcblk0rpmb
+    symlink /dev/mmcblk0rpmb /dev/block/mmcblk0rpmb
+
+on post-fs
+    mount none /dev/null /vendor/firmware_mnt/image/modem.mdt bind
+    write /sys/devices/platform/soc/6a00000.ssusb/mode peripheral
+
+on boot
+    write /sys/devices/platform/soc/6a00000.ssusb/mode peripheral
+
+on property:sys.boot_completed=1
+    write /sys/devices/platform/soc/6a00000.ssusb/mode peripheral

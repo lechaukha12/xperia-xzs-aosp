@@ -1,0 +1,29 @@
+# 2026 3 37 1 0 # 26q3 sdk/api level 37.1 - Android 17 QPR1
+
+# Linux 5.4 compatibility overrides for Sony Xperia XZs (keyaki / MSM8996):
+# - Bind-mount patched netbpfload_54 and non-BTF 4.19/5.4 BPF objects (netd.o, offload.o)
+# - Bind-mount ringbuf-safe libservice-connectivity_54.so into com.android.tethering
+# - Bind-mount Gralloc 2.0/3.0-enabled libui_swcodec.so into com.android.media.swcodec
+
+on load-bpf-programs
+    mount none /system/bin/netbpfload_54 /apex/com.android.tethering/bin/netbpfload bind
+    mount none /system/etc/bpf_mainline_54 /apex/com.android.tethering/etc/bpf/mainline bind
+    mount none /system/lib64/libservice-connectivity_54.so /apex/com.android.tethering/lib64/libservice-connectivity.so bind
+    mount none /system/lib64/libui_swcodec.so /apex/com.android.media.swcodec/lib64/libui.so bind
+    mount none /system/lib/libui_swcodec.so /apex/com.android.media.swcodec/lib/libui.so bind
+    write /proc/sys/kernel/kptr_restrict 1
+
+    exec_start bpfloader
+    wait_for_prop bpf.progs_loaded 1
+
+    write /proc/sys/kernel/kptr_restrict 2
+
+    exec_start netd1shot
+    start netd
+
+service bpfloader /system/bin/false
+    disabled
+    user root
+    oneshot
+    reboot_on_failure reboot,netbpfload-missing
+    updatable

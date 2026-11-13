@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "project": "xperia-xzs-aosp",
+  "branch": "android-17",
+  "milestone": "v0.1.0-android17-boot-freeze",
+  "frozen_date": "2026-11-13",
+  "target_device": {
+    "marketing_name": "Sony Xperia XZs",
+    "model": "SO-03J",
+    "codename": "keyaki",
+    "platform_family": "tone",
+    "soc": "Qualcomm Snapdragon 820 (MSM8996)",
+    "arch": "arm64-v8a",
+    "bootloader": "Sony S1_Boot (MSM8996 LA2.0_N_117)",
+    "partition_scheme": "Legacy non-A/B, non-dynamic (system on mmcblk0p55, vendor on oem mmcblk0p53, boot on mmcblk0p30, recovery on FOTAKernel mmcblk0p48)"
+  },
+  "components": {
+    "system_gsi": {
+      "name": "Google Android 17 AOSP ARM64 GSI (Vanilla / No GMS)",
+      "codename": "Cinnamon Bun",
+      "release_version": "17",
+      "sdk_level": 37,
+      "api_level_full": "37.1 (26Q3)",
+      "build_id": "CP3A.260905.010",
+      "security_patch": "2026-09-05",
+      "archive_filename": "aosp17_arm64_CP3A.zip",
+      "archive_sha256": "4a869a6959a50fee15ff871ce378853ced4485f2aa456eb64dbdbf7a2c0408aa",
+      "upstream_reference": "https://developer.android.com/topic/generic-system-image/releases"
+    },
+    "kernel": {
+      "name": "Linux 5.4.302-xzs54 for Sony MSM8996 tone/keyaki",
+      "version": "5.4.302",
+      "repository": "https://github.com/nec093/sov35-kernel.git",
+      "commit": "32a306e084db88fd9828f47fd6eccd5b006b7dc1",
+      "defconfig": "configs/kernel/aosp_tone_keyaki_defconfig",
+      "config_fragment": "configs/kernel/android17_54.fragment",
+      "prebuilt_verified_kernel_sha256": "b4e08686bb2c8123514780e3c8de544cbe34170b404491d24be4b78a974b60e8",
+      "audio_dlkm_count": 17
+    },
+    "vendor_and_device_configs": {
+      "vendor_base": "LineageOS 18.1 Treble Vendor (VNDK 30, target-level 5)",
+      "device_keyaki_repo": "https://github.com/nec093/sov35-vendor.git",
+      "device_keyaki_commit": "83ea428f590f8d4591bca13f018d79d148a73ff0",
+      "device_tone_common_repo": "https://github.com/nec093/sov35-vendor.git",
+      "device_tone_common_commit": "b60518ad626482a12627c2451045ccd089672f82"
+    },
+    "host_build_tools": {
+      "avbtool": {
+        "repository": "https://android.googlesource.com/platform/external/avb",
+        "commit": "3328b7b60ae384e1a92f44d7e6f3ac021c2b05be",
+        "license": "Apache-2.0"
+      },
+      "mkbootimg": {
+        "repository": "https://android.googlesource.com/platform/system/tools/mkbootimg",
+        "commit": "d2bb0af5ba6d3198a3e99529c97eda1be0b5a093",
+        "license": "Apache-2.0"
+      }
+    }
+  }
+}

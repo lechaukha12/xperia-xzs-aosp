@@ -1,0 +1,42 @@
+[
+  {
+    "name": "n-mr1",
+    "commit": {
+      "sha": "8caacbc25a4c2f528a8567ededb2c4bba01e0027",
+      "url": "https://api.github.com/repos/sonyxperiadev/device-sony-tone/commits/8caacbc25a4c2f528a8567ededb2c4bba01e0027"
+    },
+    "protected": false
+  },
+  {
+    "name": "o-mr0",
+    "commit": {
+      "sha": "46090561fa2475cc36a4070763f971e63d692ce5",
+      "url": "https://api.github.com/repos/sonyxperiadev/device-sony-tone/commits/46090561fa2475cc36a4070763f971e63d692ce5"
+    },
+    "protected": false
+  },
+  {
+    "name": "o-mr1",
+    "commit": {
+      "sha": "08c6e670c1166de4330c820fa78187d92bbb5a30",
+      "url": "https://api.github.com/repos/sonyxperiadev/device-sony-tone/commits/08c6e670c1166de4330c820fa78187d92bbb5a30"
+    },
+    "protected": false
+  },
+  {
+    "name": "p-mr1",
+    "commit": {
+      "sha": "625d3630011203fb80ecadd4a1ec75633a82eb97",
+      "url": "https://api.github.com/repos/sonyxperiadev/device-sony-tone/commits/625d3630011203fb80ecadd4a1ec75633a82eb97"
+    },
+    "protected": false
+  },
+  {
+    "name": "q-mr1",
+    "commit": {
+      "sha": "959d560da6de7252dad4affae93cb529e5475c68",
+      "url": "https://api.github.com/repos/sonyxperiadev/device-sony-tone/commits/959d560da6de7252dad4affae93cb529e5475c68"
+    },
+    "protected": false
+  }
+]
