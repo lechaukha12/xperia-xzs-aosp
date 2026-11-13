@@ -157,8 +157,9 @@ for camera_xml in /work/base_rom/device-keyaki/rootdir/vendor/etc/camera/*.xml; 
 done
 install_vfile /work/configs/init/init.keyaki.camera.rc "$MNT/etc/init/init.keyaki.camera.rc" 0644 "$RC_CTX"
 
-echo "3b. Removing broken services (thermanager GPU throttle bug, configstore@1.1, stale precompiled_sepolicy)..."
-rm -f "$MNT/etc/init/thermanager.rc" "$MNT/bin/thermanager"
+install_vfile /work/configs/thermal/thermanager.xml "$MNT/etc/thermanager.xml" 0644 "$ETC_CTX"
+
+echo "3b. Removing broken services (configstore@1.1, stale precompiled_sepolicy)..."
 rm -f "$MNT/etc/init/android.hardware.configstore@1.1-service.rc" "$MNT/bin/hw/android.hardware.configstore@1.1-service"
 rm -f "$MNT/etc/selinux/precompiled_sepolicy"*
 
