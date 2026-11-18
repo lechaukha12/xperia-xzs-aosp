@@ -148,18 +148,25 @@ docker exec -e XZS17_KERNEL_IMAGE=/work/out/kernel_a17/Image.gz-dtb xzs17-box py
 > **Back Up Critical Partitions First**: Before flashing anything onto an Xperia XZs, boot TWRP and save offline copies of `TA` (`mmcblk0p1`), `FOTAKernel` (`mmcblk0p48`), `boot` (`mmcblk0p30`), `oem` (`mmcblk0p53`), `modemst1`, `modemst2`, and `fsg` to `backup/`. **Never** flash `TA`, `aboot`, `modemst*`, or `FOTAKernel`. See [`docs/PARTITION_LAYOUT.md`](docs/PARTITION_LAYOUT.md) and [`docs/REBOOT_AND_RECOVERY.md`](docs/REBOOT_AND_RECOVERY.md).
 
 1. Power off the Xperia XZs completely. Hold **Volume Up** and connect USB to enter **Fastboot** mode (solid blue LED).
-2. Flash Vendor (`oem`), System (`system`), and Boot (`boot`):
+2. Flash Boot (`boot`) via Fastboot and boot into root TWRP recovery (`FOTAKernel` or RAM-booted `out/twrp-keyaki-5.4.img` built with `tools/build_twrp_keyaki_54.py`). Note: on Sony `S1_Boot_MSM8996_LA2.0_N_117`, `fastboot flash oem` is rejected with `FAILED (remote: 'Command not allowed')`, so `oem` (`mmcblk0p53`) and `system` (`mmcblk0p55`) are written from root TWRP:
    ```bash
-   fastboot flash oem out/oem-a17-keyaki.sparse.img
-   fastboot flash system out/system-a17-keyaki.sparse.img
    fastboot flash boot out/boot-a17-keyaki.img
+   fastboot boot out/twrp-keyaki-5.4.img
    ```
-3. If migrating from an older Android release or encrypted setup, format `/data` and `/cache` as `ext4` from TWRP (`FOTAKernel`) once before first boot.
+3. Once TWRP ADB (`recovery`) is online, write Vendor (`oem`, `mmcblk0p53`) and System (`system`, `mmcblk0p55`) and format `userdata` (`mmcblk0p54`) and `cache` (`mmcblk0p43`) as `ext4` (required on fresh builds when new APEX signing keys are generated):
+   ```bash
+   adb shell "umount /oem /vendor /system /system_root /data /sdcard /cache 2>/dev/null || true; mount -o remount,size=2600M /tmp"
+   adb push out/oem-a17-keyaki.sparse.img /tmp/oem.simg
+   adb shell "/sbin/simg2img /tmp/oem.simg /dev/block/mmcblk0p53 && rm -f /tmp/oem.simg && /sbin/e2fsck -fn /dev/block/mmcblk0p53"
+   adb push out/system-a17-keyaki.sparse.img /tmp/sys.simg
+   adb shell "/sbin/simg2img /tmp/sys.simg /dev/block/mmcblk0p55 && rm -f /tmp/sys.simg && /sbin/e2fsck -fn /dev/block/mmcblk0p55"
+   adb shell "/sbin/mke2fs -t ext4 -F /dev/block/mmcblk0p54 && /sbin/mke2fs -t ext4 -F /dev/block/mmcblk0p43 && sync"
+   ```
 4. Reboot into Android 17:
    ```bash
-   fastboot reboot
+   adb reboot
    ```
-   First boot reaches the Android 17 Launcher3 Home Screen in ~38–45 seconds.
+   First boot reaches the Android 17 Launcher3 Home Screen in ~38–70 seconds (`sys.boot_completed=1`).
 
 ---
 

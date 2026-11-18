@@ -197,7 +197,7 @@ make -C /root/sov35-kernel O=/root/kout aosp_tone_keyaki_defconfig
 make -C /root/sov35-kernel O=/root/kout olddefconfig
 
 echo "=== VERIFYING EFFECTIVE .config FLAGS ==="
-grep -E "CONFIG_(BPF_EVENTS|NET_ACT_BPF|DEBUG_INFO_BTF|UPROBE_EVENTS|IKCONFIG_PROC|EROFS_FS|OVERLAY_FS|CGROUP_BPF|ANDROID_BINDERFS)=" /root/kout/.config
+grep -E "CONFIG_(BPF_EVENTS|NET_ACT_BPF|DEBUG_INFO_BTF|UPROBE_EVENTS|IKCONFIG_PROC|CC_OPTIMIZE_FOR_SIZE|CGROUP_BPF|ANDROID_BINDERFS)=" /root/kout/.config
 
 make -C /root/sov35-kernel O=/root/kout -j"$JOBS" Image.gz-dtb modules
 

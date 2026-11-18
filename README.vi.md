@@ -109,16 +109,23 @@ docker exec -e XZS17_KERNEL_IMAGE=/work/out/kernel_a17/Image.gz-dtb xzs17-box py
 > **Sao Lưu Phân Vùng Quan Trọng Trước Khi Flash**: Trước khi ghi bất kỳ dữ liệu nào lên Xperia XZs, hãy vào TWRP sao lưu `TA` (`mmcblk0p1`), `FOTAKernel` (`mmcblk0p48`), `boot` (`mmcblk0p30`), `oem` (`mmcblk0p53`), `modemst1`, `modemst2`, và `fsg` ra máy tính (`backup/`). **Tuyệt đối không** flash đè lên `TA`, `aboot`, `modemst*`, hoặc `FOTAKernel`. Xem chi tiết tại [`docs/PARTITION_LAYOUT.md`](docs/PARTITION_LAYOUT.md) và [`docs/REBOOT_AND_RECOVERY.md`](docs/REBOOT_AND_RECOVERY.md).
 
 1. Tắt nguồn điện thoại hoàn toàn. Nhấn giữ **Tăng âm lượng (Volume Up)** và cắm cáp USB để vào **Fastboot** (đèn LED xanh dương).
-2. Nạp lần lượt Vendor (`oem`), System (`system`) và Boot (`boot`):
+2. Nạp phân vùng Boot (`boot`) qua Fastboot và khởi động vào root TWRP recovery (`FOTAKernel` hoặc boot tạm `out/twrp-keyaki-5.4.img` tạo bằng `tools/build_twrp_keyaki_54.py`). Lưu ý: trên bootloader `S1_Boot_MSM8996_LA2.0_N_117`, lệnh `fastboot flash oem` bị chặn với `FAILED (remote: 'Command not allowed')`, nên `oem` (`mmcblk0p53`) và `system` (`mmcblk0p55`) được ghi từ root TWRP:
    ```bash
-   fastboot flash oem out/oem-a17-keyaki.sparse.img
-   fastboot flash system out/system-a17-keyaki.sparse.img
    fastboot flash boot out/boot-a17-keyaki.img
+   fastboot boot out/twrp-keyaki-5.4.img
    ```
-3. Nếu chuyển từ phiên bản Android cũ sang, hãy format `/data` và `/cache` sang `ext4` trong TWRP (`FOTAKernel`) một lần trước khi khởi động.
+3. Khi TWRP kết nối ADB (`recovery`), nạp Vendor (`oem`, `mmcblk0p53`) và System (`system`, `mmcblk0p55`), đồng thời format `userdata` (`mmcblk0p54`) và `cache` (`mmcblk0p43`) sang `ext4` (bắt buộc khi cài bản build mới có cặp khóa ký APEX mới sinh):
+   ```bash
+   adb shell "umount /oem /vendor /system /system_root /data /sdcard /cache 2>/dev/null || true; mount -o remount,size=2600M /tmp"
+   adb push out/oem-a17-keyaki.sparse.img /tmp/oem.simg
+   adb shell "/sbin/simg2img /tmp/oem.simg /dev/block/mmcblk0p53 && rm -f /tmp/oem.simg && /sbin/e2fsck -fn /dev/block/mmcblk0p53"
+   adb push out/system-a17-keyaki.sparse.img /tmp/sys.simg
+   adb shell "/sbin/simg2img /tmp/sys.simg /dev/block/mmcblk0p55 && rm -f /tmp/sys.simg && /sbin/e2fsck -fn /dev/block/mmcblk0p55"
+   adb shell "/sbin/mke2fs -t ext4 -F /dev/block/mmcblk0p54 && /sbin/mke2fs -t ext4 -F /dev/block/mmcblk0p43 && sync"
+   ```
 4. Khởi động vào Android 17:
    ```bash
-   fastboot reboot
+   adb reboot
    ```
 
 ---

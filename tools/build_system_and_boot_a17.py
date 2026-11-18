@@ -369,12 +369,15 @@ try:
     install_file(COMPONENTS / "swcodec_libui32.patched.so", f"{MNT}/system/lib/libui_swcodec.so", 0o644, lib32_ctx)
 
     # C3. Install Linux 5.4 Mainline BPF loader, patched BPF objects, & tethering ringbuf patch
-    bpfload_ctx = (
-        get_selinux(f"{MNT}/system/bin/bpfloader")
-        if os.path.exists(f"{MNT}/system/bin/bpfloader")
-        else "u:object_r:bpfloader_exec:s0"
+    # Must use u:object_r:bpfloader_exec:s0 (not /system/bin/bpfloader's bpfloader_platform_exec)
+    # so init transitions u:r:init:s0 -> u:r:bpfloader:s0 when starting service bpfloader.
+    install_file(
+        COMPONENTS / "netbpfload_54",
+        f"{MNT}/system/bin/netbpfload_54",
+        0o755,
+        "u:object_r:bpfloader_exec:s0",
     )
-    install_file(COMPONENTS / "netbpfload_54", f"{MNT}/system/bin/netbpfload_54", 0o750, bpfload_ctx)
+    os.chown(f"{MNT}/system/bin/netbpfload_54", 0, 2000)
 
     bpf_dst_dir = f"{MNT}/system/etc/bpf_mainline_54"
     os.makedirs(bpf_dst_dir, exist_ok=True)
