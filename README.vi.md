@@ -6,6 +6,9 @@ Dự án port **Android 17 AOSP thuần ("Cinnamon Bun", `CP3A.260905.010`, SDK 
 
 **Cập nhật đã kiểm chứng — 13/11/2026:** kernel `5.4.302-g32a306e084db-dirty` bản số 7, hai camera hoạt động, Bluetooth được giữ nguyên và Developer options hết crash. Xem [ghi chú phát hành camera/Settings song ngữ](docs/SETTINGS_CAMERA_BRINGUP.md) để biết bằng chứng, checksum image và cách nâng cấp. Đã flash boot/OEM, đối chiếu đọc lại và kiểm tra boot thành công. Thời gian boot ở cột mốc ban đầu không phải phép đo lại của bản cập nhật này.
 
+> [!NOTE]
+> **Nhánh `oneui` — Samsung One UI 6.1 (`A057FXXU8CYC6`, Android 14 / SDK 34)**: Đóng gói bản **MysticGSI One UI 6.1 (`SM-A057F`)** chạy trên nền kernel Linux `5.4.302` (`boot-a17-keyaki.img`) và vendor `VNDK 30` (`oem-a17-keyaki.img`) bằng [`tools/build_oneui_a05s_keyaki.py`](tools/build_oneui_a05s_keyaki.py). Xem chi tiết các bản vá gốc (`bpfloader` `schedcls`, gỡ khóa `KnoxGuard 3010`, USB ConfigFS ADB, gỡ overlay random MAC Wi-Fi cho BCM4359) và hướng dẫn flash tại [`docs/ONEUI61_PORT_GUIDE.md`](docs/ONEUI61_PORT_GUIDE.md) và [`manifests/oneui61-release-20261119.json`](manifests/oneui61-release-20261119.json).
+
 > [!IMPORTANT]
 > **Cột mốc boot ban đầu đã đóng băng (`v0.1.0-android17-boot-freeze`)**: Thiết bị đã cold boot độc lập từ bộ nhớ trong eMMC vào màn hình chính Android 17 Launcher3 trong ~38 giây (`sys.boot_completed=1`, `0` crash hệ thống), với GPU Adreno 530 tăng tốc phần cứng (`1080x1920 @ 60 Hz`), cảm ứng đa điểm, Wi-Fi, âm thanh loa kép stereo, cảm biến, bộ nhớ trong và USB ADB hoạt động ổn định trên phần cứng thực tế.
 

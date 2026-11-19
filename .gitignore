@@ -10,6 +10,7 @@ fsg*
 
 # Build outputs, ROM archives, and scratch directories
 out/
+oneui_work/
 port_rom/
 base_rom/
 prebuilt/

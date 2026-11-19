@@ -6,6 +6,9 @@ Pure **Android 17 AOSP ("Cinnamon Bun", `CP3A.260905.010`, SDK 37 / API 37.1)** 
 
 **Verified update — 2026-11-13:** kernel `5.4.302-g32a306e084db-dirty` build 7, two working cameras, Bluetooth preserved and Developer options crash fixed. See [the bilingual camera/Settings release notes](docs/SETTINGS_CAMERA_BRINGUP.md) for evidence, current image checksums and upgrade instructions. The final boot/OEM flash passed read-back and reboot verification. The original boot timing below belongs to the initial milestone.
 
+> [!NOTE]
+> **`oneui` Branch — Samsung One UI 6.1 (`A057FXXU8CYC6`, Android 14 / SDK 34)**: Builds a **MysticGSI One UI 6.1 (`SM-A057F`)** system image on top of this Linux `5.4.302` (`boot-a17-keyaki.img`) and `VNDK 30` (`oem-a17-keyaki.img`) foundation via [`tools/build_oneui_a05s_keyaki.py`](tools/build_oneui_a05s_keyaki.py). See [`docs/ONEUI61_PORT_GUIDE.md`](docs/ONEUI61_PORT_GUIDE.md) and [`manifests/oneui61-release-20261119.json`](manifests/oneui61-release-20261119.json) for root-cause fixes (`bpfloader` `schedcls`, `KnoxGuard` code `3010`, ConfigFS USB ADB, and BCM4359 Wi-Fi MAC randomization RRO removal) and TWRP staging/flash steps.
+
 > [!IMPORTANT]
 > **Initial Boot Milestone (`v0.1.0-android17-boot-freeze`)**: Standalone cold boot from internal eMMC to Android 17 Launcher3 Home Screen in ~38 seconds (`sys.boot_completed=1`, `0` native/framework crashes), with hardware-accelerated Adreno 530 GPU composition (`1080x1920 @ 60 Hz`), multitouch, Wi-Fi, stereo speaker audio, sensors, internal storage, and USB ADB verified on live hardware.
 

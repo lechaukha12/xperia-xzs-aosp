@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "release": "oneui61-a05s-keyaki-2026-11-19",
+  "branch": "oneui",
+  "device": "SO-03J / keyaki (Qualcomm Snapdragon 820 MSM8996)",
+  "base_gsi": {
+    "name": "MysticGSI Samsung One UI 6.1 (Galaxy A05s SM-A057F port)",
+    "android_version": "14",
+    "sdk": 34,
+    "build_id": "UP1A.231005.007.A057FXXU8CYC6",
+    "archive_filename": "Oneui-a05s-14-A057FXXU8CYC6-AB-20250330-MysticGSI.zip",
+    "archive_size_bytes": 2173614906,
+    "archive_sha256": "04f01b0b8de62a4a5cce33ec97052b1403140ea3d6173037cbeb2461f0928e4e",
+    "download_url": "https://sourceforge.net/projects/mystic-gsi-updates/files/OneUI/Oneui-a05s-14-A057FXXU8CYC6-AB-20250330-MysticGSI.zip/download"
+  },
+  "underlying_foundation": {
+    "boot_image": "boot-a17-keyaki.img (Linux 5.4.302-g32a306e084db-dirty #7)",
+    "vendor_image": "oem-a17-keyaki.img (LineageOS 18.1 Treble Vendor, VNDK 30)"
+  },
+  "builder_script": "tools/build_oneui_a05s_keyaki.py",
+  "adaptations_and_root_causes": [
+    {
+      "id": "vndk_lfs_stubs",
+      "description": "Removed corrupt 133-byte Git LFS pointer stubs for /system/apex/com.android.vndk.v31.apex and v32 while keeping the valid ext4 com.android.vndk.v30.apex."
+    },
+    {
+      "id": "shell_apex_ext4",
+      "description": "Repacked /system/apex/com.samsung.android.shell.apex from EROFS payload to ext4 and signed with AVB SHA256_RSA4096 hashtree + APK Signature Scheme v2/v3 (4096-byte aligned)."
+    },
+    {
+      "id": "vndk_detect_vendor_sepolicy",
+      "description": "Patched /system/bin/vndk-detect to check /vendor/etc/selinux/vendor_sepolicy.cil in addition to nonplat_sepolicy.cil so persist.sys.vndk=30 resolves on oem."
+    },
+    {
+      "id": "bpfloader_schedcls",
+      "description": "Patched /system/bin/bpfloader at file offset 0x1978..0x198c (0x1988: 00000000 -> 03000000) so /system/etc/bpf/ allows BPF_PROG_TYPE_SCHED_CLS (3) for semUidBPF.o, semSmartHS.o, and mnxbNetd.o."
+    },
+    {
+      "id": "vintf_vndk30_matrix",
+      "description": "Patched VINTF compatibility_matrix.5.xml and 4.xml (graphics.mapper 2.1 -> 2.0-1, stripped <kernel> blocks) and added <vendor-ndk><version>30</version></vendor-ndk> to system_ext/etc/vintf/manifest.xml."
+    },
+    {
+      "id": "selinux_mapping_30",
+      "description": "Added empty 30.0.cil and 30.0.compat.cil stubs under system_ext and product SELinux mapping directories and ran offline secilc compilation verification against oem-a17-keyaki.img."
+    },
+    {
+      "id": "linux54_cgroups",
+      "description": "Installed Linux 5.4 compatible configs/cgroups/cgroups.json to /system/etc/cgroups.json."
+    },
+    {
+      "id": "audio_dolby_cleanup",
+      "description": "Copied audio_effects.xml to audio_effects_sec.xml and stripped STAGE_EFFECT_DOLBY lines from stage_policy.conf."
+    },
+    {
+      "id": "knoxguard_and_sdhms_removal",
+      "description": "Removed /system/priv-app/SamsungDeviceHealthManagerService (vendor crashes) and /system/priv-app/KnoxGuard (com.samsung.android.kgclient triggering remote lock code 3010 when ro.product.first_api_level < 30)."
+    },
+    {
+      "id": "wifi_mac_randomization_overlays",
+      "description": "Removed static Samsung Wi-Fi RRO overlays (/system/app/WifiRROverlayApp, WifiRROverlayAppH2E, WifiRROverlayJdm) that forced Connected MAC Randomization on BCM4359 brcmfmac, causing divergent interface MAC vs WifiConfigStore and WPA2 4-way handshake WRONG_KEY timeouts; restores factory hardware MAC bit (first_byte_locally_admin=0)."
+    },
+    {
+      "id": "configfs_usb_adb",
+      "description": "Uncommented AOSP ConfigFS gadget triggers in /system/etc/init/hw/init.usb.configfs.rc, set persist.sys.usb.config=adb in /system/product/etc/build.prop and /system/build.prop, appended keyaki properties + ro.opengles.version=196610, and updated /system/bin/rw-system.sh (resetprop_phh ro.adb.secure 0)."
+    }
+  ]
+}
